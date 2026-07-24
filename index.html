@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraSeg - Premium Customer Segmentation Hub</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="AuraSeg leverages K-Means clustering to analyze, visualize, and classify mall customers based on income and spending profiles. Upload lists, explore segments, and refine marketing strategies in real-time.">
+  <meta name="keywords" content="customer segmentation, kmeans clustering, data analytics, mall customer dataset, customer profiling, interactive dashboard">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  
+  <!-- Main Glassmorphic Container -->
+  <div class="app-container">
+    
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <div class="logo-icon">
+          <i data-lucide="radial"></i>
+        </div>
+        <div class="logo-text">
+          <h1>AuraSeg</h1>
+          <span>AI Customer Intelligence</span>
+        </div>
+      </div>
+      
+      <nav class="app-tabs">
+        <button class="tab-btn active" id="tab-visualizer-btn" onclick="switchTab('visualizer')">
+          <i data-lucide="layout-dashboard"></i> Interactive Visualizer
+        </button>
+        <button class="tab-btn" id="tab-batch-btn" onclick="switchTab('batch')">
+          <i data-lucide="upload-cloud"></i> Batch CSV Upload
+        </button>
+        <button class="tab-btn" id="tab-directory-btn" onclick="switchTab('directory')">
+          <i data-lucide="users"></i> Segment Profiles
+        </button>
+        <button class="tab-btn" id="tab-database-btn" onclick="switchTab('database')">
+          <i data-lucide="database"></i> Customer Database
+        </button>
+      </nav>
+      
+      <div class="header-status">
+        <span class="status-indicator"></span>
+        <span class="status-text">K-Means Engine: Online</span>
+      </div>
+    </header>
+    
+    <!-- Main Content Area -->
+    <main class="app-content">
+      
+      <!-- LEFT PANEL: Real-time Predictor (Stays visible or adapts) -->
+      <section class="predictor-sidebar">
+        <div class="glass-card predictor-card">
+          <div class="card-header">
+            <i data-lucide="sliders-horizontal" class="icon-accent"></i>
+            <div>
+              <h2>Live Profiler</h2>
+              <p class="card-subtitle">Adjust parameters to predict customer segment instantly.</p>
+            </div>
+          </div>
+          
+          <form class="prediction-form" onsubmit="event.preventDefault();">
+            <!-- Gender Selection -->
+            <div class="form-group">
+              <label for="input-gender">Customer Gender</label>
+              <div class="gender-toggle-group">
+                <input type="radio" id="gender-female" name="gender" value="Female" checked>
+                <label for="gender-female" class="gender-toggle-btn">Female</label>
+                
+                <input type="radio" id="gender-male" name="gender" value="Male">
+                <label for="gender-male" class="gender-toggle-btn">Male</label>
+              </div>
+            </div>
+            
+            <!-- Age Slider -->
+            <div class="form-group">
+              <div class="label-row">
+                <label for="input-age">Age</label>
+                <span class="value-display" id="age-val">30</span>
+              </div>
+              <input type="range" id="input-age" min="18" max="70" value="30" class="premium-slider">
+            </div>
+            
+            <!-- Annual Income Slider -->
+            <div class="form-group">
+              <div class="label-row">
+                <label for="input-income">Annual Income</label>
+                <span class="value-display" id="income-val">₹49.8L</span>
+              </div>
+              <input type="range" id="input-income" min="15" max="137" value="60" class="premium-slider">
+            </div>
+            
+            <!-- Spending Score Slider -->
+            <div class="form-group">
+              <div class="label-row">
+                <label for="input-spending">Spending Score (1-100)</label>
+                <span class="value-display" id="spending-val">50</span>
+              </div>
+              <input type="range" id="input-spending" min="1" max="99" value="50" class="premium-slider">
+            </div>
+          </form>
+          
+          <!-- Prediction Output Card -->
+          <div class="prediction-output" id="prediction-result">
+            <div class="result-badge" id="res-badge">Segment 0</div>
+            <h3 class="result-title" id="res-title">Standard Customers</h3>
+            <p class="result-description" id="res-desc">
+              Moderate annual income and moderate spending habits. Form the baseline customer segment.
+            </p>
+            
+            <div class="result-metrics">
+              <div class="metric-pill">
+                <i data-lucide="circle-dollar-sign"></i>
+                <span id="res-income-avg">Avg: ₹45.9L</span>
+              </div>
+              <div class="metric-pill">
+                <i data-lucide="shopping-bag"></i>
+                <span id="res-spending-avg">Avg: 49.5</span>
+              </div>
+            </div>
+            
+            <div class="strategy-box">
+              <div class="strategy-label"><i data-lucide="lightbulb"></i> Actionable Strategy</div>
+              <p class="strategy-text" id="res-strategy">
+                Engage with classic loyalty programs, regular newsletter updates, and moderate promotional discounts.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- RIGHT PANEL: Dynamic Viewports -->
+      <section class="viewport-panel">
+        
+        <!-- Tab 1: Interactive Visualizer -->
+        <div class="tab-pane active" id="pane-visualizer">
+          <div class="glass-card chart-card">
+            <div class="card-header-row">
+              <div class="card-header">
+                <i data-lucide="line-chart" class="icon-accent"></i>
+                <div>
+                  <h2>Customer Clustering Map</h2>
+                  <p class="card-subtitle">Real-time projection on Annual Income vs. Spending Score</p>
+                </div>
+              </div>
+              <div class="chart-legend-custom">
+                <span class="legend-item" style="--c: var(--cluster-0-color)">Standard</span>
+                <span class="legend-item" style="--c: var(--cluster-1-color)">Star</span>
+                <span class="legend-item" style="--c: var(--cluster-2-color)">Spendthrift</span>
+                <span class="legend-item" style="--c: var(--cluster-3-color)">Careful</span>
+                <span class="legend-item" style="--c: var(--cluster-4-color)">Frugal</span>
+              </div>
+            </div>
+            
+            <div class="chart-canvas-container">
+              <canvas id="segmentationChart"></canvas>
+            </div>
+            
+            <div class="chart-controls">
+              <button class="btn btn-secondary" onclick="toggleCentroids()">
+                <i data-lucide="target"></i> Toggle Centroids
+              </button>
+              <button class="btn btn-secondary" onclick="resetChartZoom()">
+                <i data-lucide="maximize"></i> Reset View
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Tab 2: Batch CSV Upload -->
+        <div class="tab-pane" id="pane-batch">
+          <div class="batch-split-layout">
+            <!-- Drag and Drop Box -->
+            <div class="glass-card upload-card">
+              <div class="card-header">
+                <i data-lucide="upload-cloud" class="icon-accent"></i>
+                <div>
+                  <h2>Upload Customer Directory</h2>
+                  <p class="card-subtitle">Provide a CSV file with Annual Income and Spending Score values to classify them en masse.</p>
+                </div>
+              </div>
+              
+              <div class="drag-drop-zone" id="drag-drop-zone">
+                <i data-lucide="file-spreadsheet" class="upload-icon"></i>
+                <p class="upload-text">Drag and drop your customer CSV file here</p>
+                <p class="upload-subtext">Or click to browse from device</p>
+                <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+              </div>
+              
+              <div class="csv-template-download">
+                <span>Looking for the template?</span>
+                <button class="btn-link" onclick="downloadTemplate()">
+                  <i data-lucide="download"></i> Download Template.csv
+                </button>
+              </div>
+            </div>
+            
+            <!-- Batch Processing Results Dashboard (hidden initially) -->
+            <div class="glass-card batch-results-card" id="batch-results-view" style="display: none;">
+              <div class="card-header-row">
+                <div class="card-header">
+                  <i data-lucide="pie-chart" class="icon-accent"></i>
+                  <div>
+                    <h2>Batch Analysis Results</h2>
+                    <p class="card-subtitle" id="batch-filename">filename.csv - 0 customers processed</p>
+                  </div>
+                </div>
+                <button class="btn btn-primary" onclick="downloadProcessedCSV()">
+                  <i data-lucide="download"></i> Export Segmented CSV
+                </button>
+              </div>
+              
+              <!-- Batch Stats Grid -->
+              <div class="batch-stats-grid">
+                <div class="batch-stat-card">
+                  <span class="stat-label">Total Classified</span>
+                  <span class="stat-value" id="batch-total-count">0</span>
+                </div>
+                <div class="batch-stat-card">
+                  <span class="stat-label">Dominant Segment</span>
+                  <span class="stat-value" id="batch-dominant-segment">-</span>
+                </div>
+                <div class="batch-stat-card">
+                  <span class="stat-label">Avg. Spending Score</span>
+                  <span class="stat-value" id="batch-avg-spending">0.0</span>
+                </div>
+              </div>
+              
+              <div class="batch-chart-and-table">
+                <!-- Batch chart -->
+                <div class="batch-chart-wrapper">
+                  <canvas id="batchDistributionChart"></canvas>
+                </div>
+                <!-- Batch Preview Table -->
+                <div class="batch-table-wrapper">
+                  <h3>Preview (First 10 Customers)</h3>
+                  <div class="table-scroll">
+                    <table class="premium-table" id="batch-preview-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Gender</th>
+                          <th>Age</th>
+                          <th>Income</th>
+                          <th>Spending Score</th>
+                          <th>Segment</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Dynamically filled -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Tab 3: Segment Profiles (Directory) -->
+        <div class="tab-pane" id="pane-directory">
+          <div class="segment-directory-grid">
+            
+            <!-- Card 0 -->
+            <div class="segment-details-card" style="border-top-color: var(--cluster-0-color)">
+              <div class="card-heading">
+                <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: var(--cluster-0-color);">Segment 0</span>
+                <h3>Middle of the Road</h3>
+              </div>
+              <p class="segment-longdesc">
+                Moderate-income earners with average shopping appetites. They are stable, represent the largest portion of the general consumer group, and are generally brand-neutral unless incentivized.
+              </p>
+              <div class="segment-stats-list">
+                <div class="stat-row"><span>Segment Share</span><strong>40.5% (81/200)</strong></div>
+                <div class="stat-row"><span>Avg. Annual Income</span><strong>₹45.9 Lakhs</strong></div>
+                <div class="stat-row"><span>Avg. Spending Score</span><strong>49.5 / 100</strong></div>
+                <div class="stat-row"><span>Age Spectrum</span><strong>18 – 70 Years (Avg: 42.7)</strong></div>
+              </div>
+              <div class="segment-strategy-bullet">
+                <h4><i data-lucide="compass"></i> Engagement Strategy</h4>
+                <ul>
+                  <li>Offer standard loyalty points and subscription benefits.</li>
+                  <li>Incentivize up-spending with milestone-based discount coupons.</li>
+                  <li>Promote mid-tier product lines and everyday reliability.</li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- Card 1 -->
+            <div class="segment-details-card" style="border-top-color: var(--cluster-1-color)">
+              <div class="card-heading">
+                <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: var(--cluster-1-color);">Segment 1</span>
+                <h3>High-Value Targets</h3>
+              </div>
+              <p class="segment-longdesc">
+                High-income individuals with high shopping scores. Commonly young to mid-aged professionals, they crave premium brands, early product launches, and exclusive boutique services.
+              </p>
+              <div class="segment-stats-list">
+                <div class="stat-row"><span>Segment Share</span><strong>19.5% (39/200)</strong></div>
+                <div class="stat-row"><span>Avg. Annual Income</span><strong>₹71.8 Lakhs</strong></div>
+                <div class="stat-row"><span>Avg. Spending Score</span><strong>82.1 / 100</strong></div>
+                <div class="stat-row"><span>Age Spectrum</span><strong>27 – 40 Years (Avg: 32.7)</strong></div>
+              </div>
+              <div class="segment-strategy-bullet">
+                <h4><i data-lucide="crown"></i> Engagement Strategy</h4>
+                <ul>
+                  <li>Invite to private collection previews and VIP shopping lounges.</li>
+                  <li>Assign personal styling assistants and direct executive hotlines.</li>
+                  <li>Deliver high-end, premium brand collaboration opportunities.</li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="segment-details-card" style="border-top-color: var(--cluster-2-color)">
+              <div class="card-heading">
+                <span class="badge" style="background: rgba(59, 130, 246, 0.15); color: var(--cluster-2-color);">Segment 2</span>
+                <h3>Trendsetting Spendthrifts</h3>
+              </div>
+              <p class="segment-longdesc">
+                Low income bracket but high spending score. Heavily index on younger demographics who are motivated by trend cycles, social recognition, flash sales, and modern payment plans (e.g., BNPL).
+              </p>
+              <div class="segment-stats-list">
+                <div class="stat-row"><span>Segment Share</span><strong>11.0% (22/200)</strong></div>
+                <div class="stat-row"><span>Avg. Annual Income</span><strong>₹21.3 Lakhs</strong></div>
+                <div class="stat-row"><span>Avg. Spending Score</span><strong>79.4 / 100</strong></div>
+                <div class="stat-row"><span>Age Spectrum</span><strong>18 – 35 Years (Avg: 25.3)</strong></div>
+              </div>
+              <div class="segment-strategy-bullet">
+                <h4><i data-lucide="zap"></i> Engagement Strategy</h4>
+                <ul>
+                  <li>Promote using dynamic social media visual media campaigns.</li>
+                  <li>Utilize flash-discount models and time-sensitive sales.</li>
+                  <li>Offer convenient digital financing options at checkout.</li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- Card 3 -->
+            <div class="segment-details-card" style="border-top-color: var(--cluster-3-color)">
+              <div class="card-heading">
+                <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: var(--cluster-3-color);">Segment 3</span>
+                <h3>Careful Skeptics</h3>
+              </div>
+              <p class="segment-longdesc">
+                High income combined with very low spending behaviors. Mostly male demographic, highly analytical, and resilient to traditional flash-sales. They prioritize reliability, quality, and investment return.
+              </p>
+              <div class="segment-stats-list">
+                <div class="stat-row"><span>Segment Share</span><strong>17.5% (35/200)</strong></div>
+                <div class="stat-row"><span>Avg. Annual Income</span><strong>₹73.2 Lakhs</strong></div>
+                <div class="stat-row"><span>Avg. Spending Score</span><strong>17.1 / 100</strong></div>
+                <div class="stat-row"><span>Age Spectrum</span><strong>19 – 59 Years (Avg: 41.1)</strong></div>
+              </div>
+              <div class="segment-strategy-bullet">
+                <h4><i data-lucide="shield-check"></i> Engagement Strategy</h4>
+                <ul>
+                  <li>Emphasize premium specifications, durability, and craftsmanship.</li>
+                  <li>Provide high-fidelity specifications and side-by-side data tables.</li>
+                  <li>Offer extended warranties, trial periods, and satisfaction guarantees.</li>
+                </ul>
+              </div>
+            </div>
+            
+            <!-- Card 4 -->
+            <div class="segment-details-card" style="border-top-color: var(--cluster-4-color)">
+              <div class="card-heading">
+                <span class="badge" style="background: rgba(239, 68, 68, 0.15); color: var(--cluster-4-color);">Segment 4</span>
+                <h3>Frugal Conservatives</h3>
+              </div>
+              <p class="segment-longdesc">
+                Low income matching low spending scores. Older customer demographic who prioritize essentials, price stability, and utility over luxury or emotional brand affinity.
+              </p>
+              <div class="segment-stats-list">
+                <div class="stat-row"><span>Segment Share</span><strong>11.5% (23/200)</strong></div>
+                <div class="stat-row"><span>Avg. Annual Income</span><strong>₹21.8 Lakhs</strong></div>
+                <div class="stat-row"><span>Avg. Spending Score</span><strong>20.9 / 100</strong></div>
+                <div class="stat-row"><span>Age Spectrum</span><strong>19 – 67 Years (Avg: 45.2)</strong></div>
+              </div>
+              <div class="segment-strategy-bullet">
+                <h4><i data-lucide="heart-handshake"></i> Engagement Strategy</h4>
+                <ul>
+                  <li>Ensure everyday lowest-price guarantees on core items.</li>
+                  <li>Promote bulk bundling discounts and high utility items.</li>
+                  <li>Deliver direct mailers and simple, zero-friction loyalty programs.</li>
+                </ul>
+              </div>
+            </div>
+            
+          </div>
+        </div>
+        
+        <!-- Tab 4: Raw Database Table -->
+        <div class="tab-pane" id="pane-database">
+          <div class="glass-card database-card">
+            <div class="card-header-row">
+              <div class="card-header">
+                <i data-lucide="search" class="icon-accent"></i>
+                <div>
+                  <h2>Customer Database Explorer</h2>
+                  <p class="card-subtitle">Search, filter, and paginate the base dataset of 200 mall customers.</p>
+                </div>
+              </div>
+              
+              <!-- Search & Filter Controls -->
+              <div class="db-controls">
+                <div class="search-input-wrapper">
+                  <i data-lucide="search" class="search-icon"></i>
+                  <input type="text" id="db-search" placeholder="Search by ID, Gender..." oninput="handleSearch()">
+                </div>
+                <select id="db-filter-cluster" onchange="handleFilter()">
+                  <option value="all">All Segments</option>
+                  <option value="0">Segment 0 (Standard)</option>
+                  <option value="1">Segment 1 (Star)</option>
+                  <option value="2">Segment 2 (Spendthrift)</option>
+                  <option value="3">Segment 3 (Careful)</option>
+                  <option value="4">Segment 4 (Frugal)</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="table-scroll main-db-scroll">
+              <table class="premium-table" id="main-customer-table">
+                <thead>
+                  <tr>
+                    <th onclick="sortTable(0)">Customer ID <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                    <th onclick="sortTable(1)">Gender <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                    <th onclick="sortTable(2)">Age <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                    <th onclick="sortTable(3)">Annual Income <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                    <th onclick="sortTable(4)">Spending Score (1-100) <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                    <th onclick="sortTable(5)">Assigned Segment <i data-lucide="arrow-up-down" class="sort-icon"></i></th>
+                  </tr>
+                </thead>
+                <tbody id="db-table-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- Table Pagination Footer -->
+            <div class="table-pagination-footer">
+              <span class="pagination-info" id="pagination-summary">Showing 1 to 10 of 200 entries</span>
+              <div class="pagination-buttons">
+                <button class="btn btn-icon" id="prev-page-btn" onclick="prevPage()"><i data-lucide="chevron-left"></i></button>
+                <div class="page-numbers" id="page-numbers-container">
+                  <!-- Dynamically populated -->
+                </div>
+                <button class="btn btn-icon" id="next-page-btn" onclick="nextPage()"><i data-lucide="chevron-right"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </section>
+      
+    </main>
+    
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 AuraSeg. Constructed for Customer Segmentation Analytics.</p>
+      <div class="footer-links">
+        <span>Model Version: KMeans v1.0</span>
+        <span>Accuracy Metric (Silhouette): 0.553</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

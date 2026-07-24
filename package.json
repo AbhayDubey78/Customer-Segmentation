@@ -1,0 +1,11 @@
+{
+  "name": "customer-segmentation-dashboard",
+  "version": "1.0.0",
+  "description": "Premium customer segmentation dashboard with real-time prediction and CSV batch upload.",
+  "scripts": {
+    "dev": "vite"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}
